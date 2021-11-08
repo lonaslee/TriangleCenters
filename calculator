@@ -1,0 +1,98 @@
+a = input('A:\n')
+b = input('B:\n')
+c = input('C:\n')
+
+a = a.split(' ')
+b = b.split(' ')
+c = c.split(' ')
+
+a[0] = float(a[0])
+a[1] = float(a[1])
+b[0] = float(b[0])
+b[1] = float(b[1])
+c[0] = float(c[0])
+c[1] = float(c[1])
+
+print('A'+str(a), ' B'+str(b), ' C'+str(c), sep='')
+
+def Slope(x1, y1, x2, y2, l):
+    if x2-x1 == 0:
+        return 0
+    elif y2-y1 == 0:
+        return ''
+    else:
+        M = (y2-y1)/(x2-x1) #M is a float
+        M = M*-1
+        M = M**-1
+        return M
+
+def AltSlope(m, x1, y1):
+    if m == '':
+        ForPrint, ForEq =  'x='+str(x1), str(x1)
+        ForPrint = Clean(ForPrint)
+        ForEq = Clean(ForEq)
+        return [ForPrint, ForEq] #returns list of two strings
+    elif m == 0:
+        ForPrint, ForEq = 'y='+str(y1), str(y1)
+        ForPrint = Clean(ForPrint)
+        ForEq = Clean(ForEq)
+        return [ForPrint, ForEq]
+    else:
+        ForPrint, ForEq =  'y='+str(m)+'x-'+str(m*x1 + y1), str(m)+'x-'+str(m*x1 + y1)
+        ForPrint = Clean(ForPrint)
+        ForEq = Clean(ForEq)
+        return [ForPrint, ForEq] #returns list of two strings
+
+def Orthocenter(sA, sB, sC, xA, yA, xB, yB, xC, yC):
+    if sA == 'y=0.0':
+        return [xB, 0]
+    elif sB == 'y=0.0':
+        return [xC, 0]
+    elif sC == 'y=0.0':
+        return [xA, 0]
+    elif sA == 'x='+str(xA):
+        return [xA, yB]
+    elif sB == 'x='+str(xB):
+        return [xB, yC]
+    elif sC == 'x='+str(xC):
+        return [xC, yA]
+    else:
+        return 'waytoohard'
+
+def Clean(dusty):
+    dusty.replace('--', '+')
+    dusty.replace('-0', '')
+    dusty.replace('+0', '')
+    dusty.replace('0x', '0')
+    dusty = DeciMate(dusty)
+    clean = ''
+    for a in dusty:
+        clean += str(a)
+    return clean
+
+def DeciMate(runon):
+    runon = list(runon)
+    while len(runon) > 5:
+        del runon[-1]
+    return runon
+
+def Solve(eq1, eq2):
+    hold = eq1+'='+eq2
+    hold = Clean(hold)
+    hold.split('=' or '+' or '-')
+    return hold
+
+AltA = AltSlope(Slope(b[0], b[1], c[0], c[1], 'A'), a[0], a[1])
+AltB = AltSlope(Slope(a[0], a[1], c[0], c[1], 'B'), b[0], b[1])
+AltC = AltSlope(Slope(a[0], a[1], b[0], b[1], 'C'), c[0], c[1]) #altABC is a list, print 0 and set 1 equal to other
+
+print('altitude A:', AltA[0])
+print('altitude B:', AltB[0])
+print('altitude C:', AltC[0])
+
+print(Solve(AltA[1], AltB[1]))
+print('orthocenter:'+str(Orthocenter(AltA[0], AltB[0], AltC[0], a[0], a[1], b[0], b[1], c[0], c[1])))
+
+#print(AltA[1]+' = '+AltB[1]+'\n', AltA[1]+' = '+AltC[1]+'\n', AltB[1]+' = '+AltC[1], sep='')
+
+
