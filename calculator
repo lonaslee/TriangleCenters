@@ -43,7 +43,7 @@ def AltSlope(m, x1, y1):
         ForEq = Clean(ForEq)
         return [ForPrint, ForEq] #returns list of two strings
 
-def Orthocenter(sA, sB, sC, xA, yA, xB, yB, xC, yC):
+def Orthocenter(sA, sB, sC, xA, yA, xB, yB, xC, yC, eq1, eq2):
     if sA == 'y=0.0':
         return [xB, 0]
     elif sB == 'y=0.0':
@@ -57,30 +57,124 @@ def Orthocenter(sA, sB, sC, xA, yA, xB, yB, xC, yC):
     elif sC == 'x='+str(xC):
         return [xC, yA]
     else:
-        return 'waytoohard'
+        return Solve(eq1, eq2) #float
+
+def Solve(eq1, eq2): #working now pausemanhold?
+    eq1List, eq2List = [], []
+    for V in eq1:
+        eq1List.append(V)
+    for V in eq2:
+        eq2List.append(V)
+    x1M = eq1List[0:eq1List.index('x')] #start of findM
+    x2M = eq2List[0:eq2List.index('x')]
+    strx1M, strx2M = '', ''
+    for A in x1M:
+        strx1M += A
+    for B in x2M:
+        strx2M += B
+    x1M, x2M = strx1M, strx2M #string, floatable
+    del strx1M, strx2M
+    if '-' in x1M:
+        if x1M != '-' and len(x2M) == 2:
+            x1M = float(str(x1M[0]+str(x1M[1])))
+        elif x1M == '-':
+            x1M = -1.0  
+    if '-' in x2M:
+        if x2M != '-' and len(x2M) == 2:
+            x2M = float(str(x2M[0])+str(x2M[1]))
+        elif x2M == '-':
+            x2M = -1.0
+    if x1M == '':
+        x1M = 1.0
+    if x2M == '':
+        x2M = 1.0 #x1M and x2M are 'M' in mx+b
+    x1M, x2M = float(DeciMate(x1M)), float(DeciMate(x2M))
+    x1B = eq1List[eq1List.index('x')+1:] #start of findB
+    x2B = eq2List[eq2List.index('x')+1:]
+    strx1B, strx2B = '', ''
+    for A in x1B:
+        strx1B += str(A)
+    for B in x2B:
+        strx2B += str(B) #strx 1/2 B are 'B' in mx+b
+    x1B, x2B = strx1B, strx2B #strings, floatable
+    del strx1B, strx2B
+    XList = OneSideX(x1M, x2M)
+    X = XList[0]
+    XS = XList[1]
+    B = OneSideB(x1B, x2B, XS)
+    FinalX = DeciMate(B/X) #x of orthocenter
+    FinalY = PlugIn(x1M, FinalX, x1B) #y of orthocenter
+    return [FinalX, FinalY]
+
+def OneSideX(x1M, x2M):
+    x1M, x2M = float(x1M), float(x2M)
+    if x1M > 0 and x2M > 0: #pos pos
+        if x1M > x2M:
+            M = float(DeciMate(x1M-x2M))
+            MSide = 'L'
+        else:
+            M = float(DeciMate(x2M-x1M))
+            MSide = 'R'
+    elif x1M < 0:
+        if x2M > 0: #neg pos
+            M = float(DeciMate(x2M+x1M*-1))
+            MSide = 'R'
+        else: #neg neg
+            if x1M < x2M:
+                M = float(DeciMate(x1M+x2M*-1))
+                MSide = 'L'
+            else:
+                M = float(DeciMate(x2M+x1M*-1))
+                MSide = 'R'
+    else: #pos neg
+        M = float(DeciMate(x1M+x2M*-1))
+        MSide = 'L'
+    return [M, MSide]
+
+def OneSideB(x1B, x2B, XSide):
+    x1B, x2B = float(x1B), float(x2B)
+    if x1B > 0 and x2B > 0:
+        if XSide == 'L': #pos pos left
+            B = x2B-x1B
+        else: #pos pos right
+            B = x1B-x2B
+    elif x1B < 0:
+        if x2B > 0:
+            if XSide == 'L': #neg pos left    
+                B = x1B*-1+x2B
+            else: #neg pos right
+                B = x2B+x1B
+        else:
+            if XSide == 'L': #neg neg left
+                B = x2B+x1B*-1
+            else: #neg neg right
+                B = x1B+x2B*-1
+    else:
+        if XSide == 'L': #pos neg left
+            B = x2B-x1B
+        else:
+            B = x1B+x2B*-1
+    return B
+
+def PlugIn(M, xVal, B):
+    timeX = float(M)*xVal
+    return timeX+B
 
 def Clean(dusty):
     dusty.replace('--', '+')
     dusty.replace('-0', '')
     dusty.replace('+0', '')
     dusty.replace('0x', '0')
-    dusty = DeciMate(dusty)
-    clean = ''
-    for a in dusty:
-        clean += str(a)
-    return clean
+    return dusty
 
 def DeciMate(runon):
-    runon = list(runon)
+    runon = list(str(runon))
     while len(runon) > 5:
         del runon[-1]
-    return runon
-
-def Solve(eq1, eq2):
-    hold = eq1+'='+eq2
-    hold = Clean(hold)
-    hold.split('=' or '+' or '-')
-    return hold
+    round = ''
+    for A in runon:
+        round += str(A)
+    return round
 
 AltA = AltSlope(Slope(b[0], b[1], c[0], c[1], 'A'), a[0], a[1])
 AltB = AltSlope(Slope(a[0], a[1], c[0], c[1], 'B'), b[0], b[1])
@@ -90,9 +184,4 @@ print('altitude A:', AltA[0])
 print('altitude B:', AltB[0])
 print('altitude C:', AltC[0])
 
-print(Solve(AltA[1], AltB[1]))
-print('orthocenter:'+str(Orthocenter(AltA[0], AltB[0], AltC[0], a[0], a[1], b[0], b[1], c[0], c[1])))
-
-#print(AltA[1]+' = '+AltB[1]+'\n', AltA[1]+' = '+AltC[1]+'\n', AltB[1]+' = '+AltC[1], sep='')
-
-
+print('orthocenter:'+str(Orthocenter(AltA[0], AltB[0], AltC[0], a[0], a[1], b[0], b[1], c[0], c[1], AltA[1], AltB[1])))
