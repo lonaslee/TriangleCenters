@@ -1,47 +1,46 @@
-a = input('A:\n')
-b = input('B:\n')
-c = input('C:\n')
+def GetInputs():
+    in1 = CleanInputs(input('A:\n'))
+    in2 = CleanInputs(input('B:\n'))
+    in3 = CleanInputs(input('C:\n'))
+    a = {'x':float(in1[0]), 'y':float(in1[1])}
+    b = {'x':float(in2[0]), 'y':float(in2[1])}
+    c = {'x':float(in3[0]), 'y':float(in3[1])}
+    return (a, b, c)
 
-a = a.split(' ')
-b = b.split(' ')
-c = c.split(' ')
+def CleanInputs(inp):
+    """str -> [flint, flint]"""
+    inp = inp.strip('()')
+    inp = inp.replace(',', ' ')
+    inp = inp.replace('  ', ' ')
+    inp = inp.strip()
+    return inp.split(' ')
 
-a[0] = float(a[0])
-a[1] = float(a[1])
-b[0] = float(b[0])
-b[1] = float(b[1])
-c[0] = float(c[0])
-c[1] = float(c[1])
-
-print('A'+str(a), ' B'+str(b), ' C'+str(c), sep='')
-
-def Slope(x1, y1, x2, y2, l):
+def Slope(x1, y1, x2, y2): # done
+    """flint, flint, flint, flint -> float"""
     if x2-x1 == 0:
         return 0
     elif y2-y1 == 0:
         return ''
     else:
-        M = (y2-y1)/(x2-x1) #M is a float
-        M = M*-1
-        M = M**-1
-        return M
+        M = (y2-y1)/(x2-x1)
+        return DeciMate(M)
 
-def AltSlope(m, x1, y1):
+def AltSlope(m, x1, y1): # done
+    """flint, flint, flint -> (str, str)"""
     if m == '':
-        ForPrint, ForEq =  'x='+str(x1), str(x1)
-        ForPrint = Clean(ForPrint)
-        ForEq = Clean(ForEq)
-        return [ForPrint, ForEq] #returns list of two strings
+        ForPrint, ForEq = f'x={x1}', f'{x1}'
     elif m == 0:
-        ForPrint, ForEq = 'y='+str(y1), str(y1)
-        ForPrint = Clean(ForPrint)
-        ForEq = Clean(ForEq)
-        return [ForPrint, ForEq]
+        ForPrint, ForEq = f'y={y1}', f'{y1}'
     else:
-        ForPrint, ForEq =  'y='+str(m)+'x-'+str(m*x1 + y1), str(m)+'x-'+str(m*x1 + y1)
-        ForPrint = Clean(ForPrint)
-        ForEq = Clean(ForEq)
-        return [ForPrint, ForEq] #returns list of two strings
+        m = m*-1
+        m = m**-1 # perpendicular
+        if m*x1*-1 + y1 <= 0:
+            ForPrint, ForEq = f'y={DeciMate(m)}x{DeciMate(m*x1*-1+y1)}', f'{m}x{m*x1*-1+y1}'
+        else:
+            ForPrint, ForEq = f'y={DeciMate(m)}x+{DeciMate(m*x1*-1+y1)}', f'{m}x+{DeciMate(m*x1*-1+y1)}'
+    ForPrint = Clean(ForPrint)
+    ForEq = Clean(ForEq)
+    return (ForPrint, ForEq)
 
 def Orthocenter(sA, sB, sC, xA, yA, xB, yB, xC, yC, eq1, eq2):
     if sA == 'y=0.0':
@@ -57,82 +56,68 @@ def Orthocenter(sA, sB, sC, xA, yA, xB, yB, xC, yC, eq1, eq2):
     elif sC == 'x='+str(xC):
         return [xC, yA]
     else:
-        return Solve(eq1, eq2) #float
+        return Solve(eq1, eq2)
 
-def Solve(eq1, eq2): #working now pausemanhold?
-    eq1List, eq2List = [], []
-    for V in eq1:
-        eq1List.append(V)
-    for V in eq2:
-        eq2List.append(V)
-    x1M = eq1List[0:eq1List.index('x')] #start of findM
-    x2M = eq2List[0:eq2List.index('x')]
-    strx1M, strx2M = '', ''
-    for A in x1M:
-        strx1M += A
-    for B in x2M:
-        strx2M += B
-    x1M, x2M = strx1M, strx2M #string, floatable
-    del strx1M, strx2M
-    if '-' in x1M:
-        if x1M != '-' and len(x2M) == 2:
-            x1M = float(str(x1M[0]+str(x1M[1])))
-        elif x1M == '-':
-            x1M = -1.0  
-    if '-' in x2M:
-        if x2M != '-' and len(x2M) == 2:
-            x2M = float(str(x2M[0])+str(x2M[1]))
-        elif x2M == '-':
-            x2M = -1.0
+def Solve(eq1, eq2):
+    """str, str -> (float, float)"""
+    x1M, x2M = FindM(eq1, eq2)
+    x1B, x2B = FindB(eq1, eq2)
+    M, Xside = OneSideX(x1M, x2M)
+    B = OneSideB(x1B, x2B, Xside)
+    FinalX = DeciMate(B/M)
+    FinalY1 = DeciMate(PlugIn(x1M, FinalX, x1B))
+    FinalY2 = DeciMate(PlugIn(x2M, FinalX, x2B))
+    return (FinalX, Average(FinalY1, FinalY2))
+
+def FindM(eq1, eq2):
+    """str, str -> (float, float)"""
+    x1M, x2M = eq1[0:eq1.index('x')], eq2[0:eq2.index('x')]
+    if x1M == '-':
+        x1M = '-1.0'
+    if x2M == '-':
+        x2M == '-1.0'
     if x1M == '':
-        x1M = 1.0
+        x1M = '1.0'
     if x2M == '':
-        x2M = 1.0 #x1M and x2M are 'M' in mx+b
-    x1M, x2M = float(DeciMate(x1M)), float(DeciMate(x2M))
-    x1B = eq1List[eq1List.index('x')+1:] #start of findB
-    x2B = eq2List[eq2List.index('x')+1:]
-    strx1B, strx2B = '', ''
-    for A in x1B:
-        strx1B += str(A)
-    for B in x2B:
-        strx2B += str(B) #strx 1/2 B are 'B' in mx+b
-    x1B, x2B = strx1B, strx2B #strings, floatable
-    del strx1B, strx2B
-    XList = OneSideX(x1M, x2M)
-    X = XList[0]
-    XS = XList[1]
-    B = OneSideB(x1B, x2B, XS)
-    FinalX = DeciMate(B/X) #x of orthocenter
-    FinalY = PlugIn(x1M, FinalX, x1B) #y of orthocenter
-    return [FinalX, FinalY]
+        x2M == '1.0'
+    return (DeciMate(float(x1M)), DeciMate(float(x2M)))
+
+def FindB(eq1, eq2):
+    """str, str -> (float, float)"""
+    x1B, x2B = eq1[eq1.index('x')+1:], eq2[eq2.index('x')+1:]
+    if x1B == '':
+        x1B = '0.0'
+    if x2B == '':
+        x2B = '0.0'
+    return (DeciMate(float(x1B)), DeciMate(float(x2B)))
 
 def OneSideX(x1M, x2M):
-    x1M, x2M = float(x1M), float(x2M)
+    """flint, flint -> (float, str)"""
     if x1M > 0 and x2M > 0: #pos pos
         if x1M > x2M:
-            M = float(DeciMate(x1M-x2M))
+            M = DeciMate(x1M-x2M)
             MSide = 'L'
         else:
-            M = float(DeciMate(x2M-x1M))
+            M = DeciMate(x2M-x1M)
             MSide = 'R'
     elif x1M < 0:
         if x2M > 0: #neg pos
-            M = float(DeciMate(x2M+x1M*-1))
+            M = DeciMate(x2M+x1M*-1)
             MSide = 'R'
         else: #neg neg
             if x1M < x2M:
-                M = float(DeciMate(x1M+x2M*-1))
+                M = DeciMate(x1M+x2M*-1)
                 MSide = 'L'
             else:
-                M = float(DeciMate(x2M+x1M*-1))
+                M = DeciMate(x2M+x1M*-1)
                 MSide = 'R'
     else: #pos neg
-        M = float(DeciMate(x1M+x2M*-1))
+        M = DeciMate(x1M+x2M*-1)
         MSide = 'L'
-    return [M, MSide]
+    return (M, MSide)
 
 def OneSideB(x1B, x2B, XSide):
-    x1B, x2B = float(x1B), float(x2B)
+    """flint, flint, str -> float"""
     if x1B > 0 and x2B > 0:
         if XSide == 'L': #pos pos left
             B = x2B-x1B
@@ -140,10 +125,10 @@ def OneSideB(x1B, x2B, XSide):
             B = x1B-x2B
     elif x1B < 0:
         if x2B > 0:
-            if XSide == 'L': #neg pos left    
+            if XSide == 'L': #neg pos left   
                 B = x1B*-1+x2B
             else: #neg pos right
-                B = x2B+x1B
+                B = x1B-x2B
         else:
             if XSide == 'L': #neg neg left
                 B = x2B+x1B*-1
@@ -152,36 +137,37 @@ def OneSideB(x1B, x2B, XSide):
     else:
         if XSide == 'L': #pos neg left
             B = x2B-x1B
-        else:
+        else: # pos neg right
             B = x1B+x2B*-1
     return B
 
 def PlugIn(M, xVal, B):
-    timeX = float(M)*xVal
-    return timeX+B
+    """flint, flint, flint -> float"""
+    return DeciMate(M*xVal)+B
+
+def Average(num1, num2):
+    """flint, flint -> float"""
+    return DeciMate((num1+num2)/2)
 
 def Clean(dusty):
-    dusty.replace('--', '+')
-    dusty.replace('-0', '')
-    dusty.replace('+0', '')
-    dusty.replace('0x', '0')
+    """str -> str"""
+    dusty = dusty.replace('--', '+')
+    dusty = dusty.replace('-0.0', '')
+    dusty = dusty.replace('+0.0', '')
+    dusty = dusty.replace('x0.0', 'x')
+    dusty = dusty.replace('0.0x', '')
     return dusty
 
-def DeciMate(runon):
-    runon = list(str(runon))
-    while len(runon) > 5:
-        del runon[-1]
-    round = ''
-    for A in runon:
-        round += str(A)
-    return round
+def DeciMate(num):
+    """flint -> float"""
+    return round(num, 3)
 
-AltA = AltSlope(Slope(b[0], b[1], c[0], c[1], 'A'), a[0], a[1])
-AltB = AltSlope(Slope(a[0], a[1], c[0], c[1], 'B'), b[0], b[1])
-AltC = AltSlope(Slope(a[0], a[1], b[0], b[1], 'C'), c[0], c[1]) #altABC is a list, print 0 and set 1 equal to other
+def Execute():
+    a, b, c = GetInputs()
+    AltA = AltSlope(Slope(b['x'], b['y'], c['x'], c['y']), a['x'], a['y'])
+    AltB = AltSlope(Slope(a['x'], a['y'], c['x'], c['y']), b['x'], b['y'])
+    AltC = AltSlope(Slope(a['x'], a['y'], b['x'], b['y']), c['x'], c['y'])
+    Ortho = Orthocenter(AltA[0], AltB[0], AltC[0], a['x'], a['y'], b['x'], b['y'], c['x'], c['y'], AltA[1], AltB[1])
+    return f'A({a["x"]}, {a["y"]})  B({b["x"]}, {b["y"]})  C({c["x"]}, {c["y"]})\nAltitude A: {AltA[0]}\nAltitude B: {AltB[0]}\nAltitude C: {AltC[0]}\nOrthocenter: {Ortho}'
 
-print('altitude A:', AltA[0])
-print('altitude B:', AltB[0])
-print('altitude C:', AltC[0])
-
-print('orthocenter:'+str(Orthocenter(AltA[0], AltB[0], AltC[0], a[0], a[1], b[0], b[1], c[0], c[1], AltA[1], AltB[1])))
+print(Execute())
