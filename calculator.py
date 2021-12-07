@@ -10,8 +10,7 @@ def GetInputs():
     c = {'x':float(in3[0]), 'y':float(in3[1])}
     return (a, b, c, in4)
 
-def CleanInputs(inp):
-    """str -> [flint, flint]"""
+def CleanInputs(inp) -> list:
     inp = inp.strip('()')
     inp = inp.replace(',', ' ')
     while '  ' in inp:
@@ -19,8 +18,7 @@ def CleanInputs(inp):
     inp = inp.strip()
     return inp.split(' ')
 
-def Slope(x1, y1, x2, y2):
-    """flint, flint, flint, flint -> float"""
+def Slope(x1, y1, x2, y2) -> float:
     if x2-x1 == 0:
         return 0
     elif y2-y1 == 0:
@@ -29,8 +27,7 @@ def Slope(x1, y1, x2, y2):
         M = (y2-y1)/(x2-x1)
         return DeciMate(M)
 
-def Solve(eq1, eq2):
-    """str, str -> (float, float)"""
+def Solve(eq1, eq2) -> tuple:
     x1M, x2M = FindM(eq1, eq2)
     x1B, x2B = FindB(eq1, eq2)
     M, Xside = OneSideX(x1M, x2M)
@@ -40,8 +37,7 @@ def Solve(eq1, eq2):
     FinalY2 = DeciMate(PlugIn(x2M, FinalX, x2B))
     return (FinalX, Average(FinalY1, FinalY2))
 
-def FindM(eq1, eq2):
-    """str, str -> (float, float)"""
+def FindM(eq1, eq2) -> tuple:
     x1M, x2M = eq1[0:eq1.index('x')], eq2[0:eq2.index('x')]
     if x1M == '-':
         x1M = '-1.0'
@@ -53,8 +49,7 @@ def FindM(eq1, eq2):
         x2M == '1.0'
     return (DeciMate(float(x1M)), DeciMate(float(x2M)))
 
-def FindB(eq1, eq2):
-    """str, str -> (float, float)"""
+def FindB(eq1, eq2) -> tuple:
     x1B, x2B = eq1[eq1.index('x')+1:], eq2[eq2.index('x')+1:]
     if x1B == '':
         x1B = '0.0'
@@ -62,8 +57,7 @@ def FindB(eq1, eq2):
         x2B = '0.0'
     return (DeciMate(float(x1B)), DeciMate(float(x2B)))
 
-def OneSideX(x1M, x2M):
-    """flint, flint -> (float, str)"""
+def OneSideX(x1M, x2M) -> tuple:
     if x1M > 0 and x2M > 0: #pos pos
         if x1M > x2M:
             M = DeciMate(x1M-x2M)
@@ -87,8 +81,7 @@ def OneSideX(x1M, x2M):
         MSide = 'L'
     return (M, MSide)
 
-def OneSideB(x1B, x2B, XSide):
-    """flint, flint, str -> float"""
+def OneSideB(x1B, x2B, XSide) -> float:
     if x1B > 0 and x2B > 0:
         if XSide == 'L': #pos pos left
             B = x2B-x1B
@@ -112,28 +105,25 @@ def OneSideB(x1B, x2B, XSide):
             B = x1B+x2B*-1
     return B
 
-def PlugIn(M, xVal, B):
-    """flint, flint, flint -> float"""
+def PlugIn(M, xVal, B) -> float:
     return DeciMate(M*xVal)+B
 
-def Average(*nums):
-    """*flints -> float"""
+def Average(*nums: tuple) -> float:
     Sum = 0
     for onenum in nums:
         Sum += onenum
     return DeciMate((Sum)/len(nums))
 
-def Clean(dusty):
-    """str -> str"""
+def Clean(dusty: str) -> str:
     dusty = dusty.replace('--', '+')
-    dusty = dusty.replace('-0.0', '')
-    dusty = dusty.replace('+0.0', '')
+    dusty = dusty.removesuffix('-0.0')
+    dusty = dusty.removesuffix('+0.0')
     dusty = dusty.replace('x0.0', 'x')
-    dusty = dusty.replace('0.0x', '')
+    dusty = dusty.replace('0.0x+', '')
+    dusty = dusty.replace('0.0x-', '')
     return dusty
 
-def DeciMate(num):
-    """flint -> float"""
+def DeciMate(num) -> float:
     return round(num, 3)
 
 def Coords(Point='O', **kpoints):
@@ -178,7 +168,6 @@ def Coords(Point='O', **kpoints):
             return (DeciMate(kpoints['b']['x']), DeciMate(kpoints['c']['y'])) if Point == 'O' else (DeciMate(float(kpoints['eq2']['eq'])), DeciMate(float(kpoints['eq3']['eq'])))
 
 def SlopeEquation(m, x1, y1, per=False):
-    """flint, flint, flint -> (str, str)"""
     if m == '':
         ForPrint, ForEq = f'x={x1}', f'{x1}'
     elif m == 0:
@@ -204,7 +193,7 @@ def Circumcenter(a, b, c):
     PerB = SlopeEquation(Slope(a['x'], a['y'], c['x'], c['y']), Average(a['x'], c['x']), Average(a['y'], c['y']))
     PerC = SlopeEquation(Slope(a['x'], a['y'], b['x'], b['y']), Average(a['x'], b['x']), Average(a['y'], b['y']))
     Circum = Coords('C', eq1=PerA, eq2=PerB, eq3=PerC, a=a, b=b, c=c)
-    return f'Perpendicular Bisector of BC: {PerA["pr"]}\nPerpendicular Bisector of AC: {PerB["pr"]}\nPerpendicular Bisector of AB: {PerC["pr"]}\nCircumcenter: {Circum}\n\n'
+    return f'Perpendicular Bisector of AB: {PerC["pr"]}\nPerpendicular Bisector of AC: {PerB["pr"]}\nPerpendicular Bisector of BC: {PerA["pr"]}\nCircumcenter: {Circum}\n\n'
 
 def Centroid(a, b, c):
     MedA = SlopeEquation(Slope((b["x"]+c["x"])/2, (b["y"]+c["y"])/2, a["x"], a["y"]), a['x'], a['y'], True)
@@ -215,7 +204,7 @@ def Centroid(a, b, c):
 
 def Execute():
     a, b, c, centype = GetInputs()
-    FinalString = f'A({a["x"]}, {a["y"]}) B({b["x"]}, {b["y"]}) C({c["x"]}, {c["y"]})\n\n'
+    FinalString = f'A({a["x"]}, {a["y"]}) B({b["x"]}, {b["y"]}) C({c["x"]}, {c["y"]})\nSlope of AB: {SlopeEquation(Slope(a["x"], a["y"], b["x"], b["y"]), a["x"], a["y"], True)["pr"]}\nSlope of AC: {SlopeEquation(Slope(a["x"], a["y"], c["x"], c["y"]), a["x"], a["y"], True)["pr"]}\nSlope of BC: {SlopeEquation(Slope(b["x"], b["y"], c["x"], c["y"]), b["x"], b["y"], True)["pr"]}\n\n'
     if centype == '':
         FinalString = FinalString+Orthocenter(a, b, c)+Circumcenter(a, b, c)+Centroid(a, b, c)
     elif centype.upper().startswith('CE'):
