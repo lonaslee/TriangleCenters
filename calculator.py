@@ -9,6 +9,7 @@ def GetInputs() -> tuple:
     c = {'x':float(in3[0]), 'y':float(in3[1])}
     return (a, b, c)
 
+
 def CleanInputs(inp) -> list:
     inp = inp.strip('()')
     inp = inp.replace(',', ' ')
@@ -16,6 +17,7 @@ def CleanInputs(inp) -> list:
         inp = inp.replace('  ', ' ')
     inp = inp.strip()
     return inp.split(' ')
+
 
 def Slope(x1, y1, x2, y2) -> float:
     if x2-x1 == 0:
@@ -26,6 +28,7 @@ def Slope(x1, y1, x2, y2) -> float:
         M = (y2-y1)/(x2-x1)
         return DeciMate(M)
 
+
 def Solve(eq1, eq2) -> tuple:
     x1M, x2M = FindM(eq1, eq2)
     x1B, x2B = FindB(eq1, eq2)
@@ -35,6 +38,7 @@ def Solve(eq1, eq2) -> tuple:
     FinalY1 = DeciMate(PlugIn(x1M, FinalX, x1B))
     FinalY2 = DeciMate(PlugIn(x2M, FinalX, x2B))
     return (FinalX, Average(FinalY1, FinalY2))
+
 
 def FindM(eq1, eq2) -> tuple:
     x1M, x2M = eq1[0:eq1.index('x')], eq2[0:eq2.index('x')]
@@ -48,6 +52,7 @@ def FindM(eq1, eq2) -> tuple:
         x2M == '1.0'
     return (DeciMate(float(x1M)), DeciMate(float(x2M)))
 
+
 def FindB(eq1, eq2) -> tuple:
     x1B, x2B = eq1[eq1.index('x')+1:], eq2[eq2.index('x')+1:]
     if x1B == '':
@@ -55,6 +60,7 @@ def FindB(eq1, eq2) -> tuple:
     if x2B == '':
         x2B = '0.0'
     return (DeciMate(float(x1B)), DeciMate(float(x2B)))
+
 
 def OneSideX(x1M, x2M) -> tuple:
     if x1M > 0 and x2M > 0: #pos pos
@@ -80,6 +86,7 @@ def OneSideX(x1M, x2M) -> tuple:
         MSide = 'L'
     return (M, MSide)
 
+
 def OneSideB(x1B, x2B, XSide) -> float:
     if x1B > 0 and x2B > 0:
         if XSide == 'L': #pos pos left
@@ -104,14 +111,17 @@ def OneSideB(x1B, x2B, XSide) -> float:
             B = x1B+x2B*-1
     return B
 
+
 def PlugIn(M, xVal, B) -> float:
     return DeciMate(M*xVal)+B
+
 
 def Average(*nums: tuple) -> float:
     Sum = 0
     for onenum in nums:
         Sum += onenum
     return DeciMate((Sum)/len(nums))
+
 
 def Clean(dusty: str) -> str:
     dusty = dusty.replace('--', '+')
@@ -122,8 +132,10 @@ def Clean(dusty: str) -> str:
     dusty = dusty.replace('0.0x-', '')
     return dusty
 
+
 def DeciMate(num) -> float:
     return round(num, 3)
+
 
 def Coords(Point='O', **kpoints) -> tuple:
     if Point == 'O':
@@ -219,6 +231,7 @@ def Coords(Point='O', **kpoints) -> tuple:
                 DeciMate(float(kpoints['eq3']['eq']))
             )
 
+
 def SlopeEquation(m, x1, y1, per=False) -> dict:
     if m == '':
         ForPrint, ForEq = f'x={x1}', f'{x1}'
@@ -235,6 +248,7 @@ def SlopeEquation(m, x1, y1, per=False) -> dict:
     ForPrint, ForEq = Clean(ForPrint), Clean(ForEq)
     return {'pr':ForPrint, 'eq':ForEq}
 
+
 def Orthocenter(a, b, c) -> str:
     AltA = SlopeEquation(Slope(b['x'], b['y'], c['x'], c['y']), a['x'], a['y'])
     AltB = SlopeEquation(Slope(a['x'], a['y'], c['x'], c['y']), b['x'], b['y'])
@@ -244,6 +258,7 @@ def Orthocenter(a, b, c) -> str:
         f'Altitude A: {AltA["pr"]}\nAltitude B: {AltB["pr"]}\n'
         f'Altitude C: {AltC["pr"]}\nOrthocenter: {Ortho}\n\n'
     )
+
 
 def Circumcenter(a, b, c) -> str:
     PerA = (SlopeEquation(Slope(b['x'], b['y'], c['x'], c['y']),
@@ -260,6 +275,7 @@ def Circumcenter(a, b, c) -> str:
         f'Circumcenter: {Circum}\n\n'
     )
 
+
 def Centroid(a, b, c) -> str:
     MedA = (SlopeEquation(Slope((b["x"]+c["x"])/2, (b["y"]+c["y"])/2,
             a["x"], a["y"]), a['x'], a['y'], True))
@@ -272,6 +288,7 @@ def Centroid(a, b, c) -> str:
         f'Median A: {MedA["pr"]}\nMedian B: {MedB["pr"]}\n'
         f'Median C: {MedC["pr"]}\nCentroid: {Centro}'
     )
+
 
 def Execute() -> str:
     a, b, c = GetInputs()
@@ -289,5 +306,6 @@ def Execute() -> str:
     for cent in (Orthocenter, Circumcenter, Centroid):
         FinalString = FinalString+cent(a, b, c)
     return FinalString
+
 
 print(Execute())
