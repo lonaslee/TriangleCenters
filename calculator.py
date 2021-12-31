@@ -1,16 +1,16 @@
-def GetInputs() -> tuple:
-    in1 = CleanInputs(input('A:\n'))
-    in2 = CleanInputs(input('B:\n'))
-    in3 = CleanInputs(input('C:\n'))
+def get_inputs() -> tuple:
+    in1 = clean_inputs(input('A:\n'))
+    in2 = clean_inputs(input('B:\n'))
+    in3 = clean_inputs(input('C:\n'))
     if len(in1) != 2 or len(in2) != 2 or len(in3) != 2:
         raise IndexError('the inputs are not correctly formatted')
-    a = {'x':float(in1[0]), 'y':float(in1[1])}
-    b = {'x':float(in2[0]), 'y':float(in2[1])}
-    c = {'x':float(in3[0]), 'y':float(in3[1])}
-    return (a, b, c)
+    a = {'x': float(in1[0]), 'y': float(in1[1])}
+    b = {'x': float(in2[0]), 'y': float(in2[1])}
+    c = {'x': float(in3[0]), 'y': float(in3[1])}
+    return a, b, c
 
 
-def CleanInputs(inp) -> list:
+def clean_inputs(inp: str) -> list:
     inp = inp.strip('()')
     inp = inp.replace(',', ' ')
     while '  ' in inp:
@@ -19,111 +19,111 @@ def CleanInputs(inp) -> list:
     return inp.split(' ')
 
 
-def Slope(x1, y1, x2, y2) -> float:
-    if x2-x1 == 0:
+def slope(x1, y1, x2, y2) -> float | str:
+    if x2 - x1 == 0:
         return 0
-    elif y2-y1 == 0:
+    elif y2 - y1 == 0:
         return ''
     else:
-        M = (y2-y1)/(x2-x1)
-        return DeciMate(M)
+        m_val = (y2 - y1) / (x2 - x1)
+        return decimate(m_val)
 
 
-def Solve(eq1, eq2) -> tuple:
-    x1M, x2M = FindM(eq1, eq2)
-    x1B, x2B = FindB(eq1, eq2)
-    M, Xside = OneSideX(x1M, x2M)
-    B = OneSideB(x1B, x2B, Xside)
-    FinalX = DeciMate(B/M)
-    FinalY1 = DeciMate(PlugIn(x1M, FinalX, x1B))
-    FinalY2 = DeciMate(PlugIn(x2M, FinalX, x2B))
-    return (FinalX, Average(FinalY1, FinalY2))
+def solve(eq1, eq2) -> tuple:
+    x1m, x2m = find_m(eq1, eq2)
+    x1b, x2b = find_b(eq1, eq2)
+    m, x_side = one_side_x(x1m, x2m)
+    b = one_side_b(x1b, x2b, x_side)
+    final_x = decimate(b / m)
+    final_y1 = decimate(plug_in(x1m, final_x, x1b))
+    final_y2 = decimate(plug_in(x2m, final_x, x2b))
+    return final_x, average(final_y1, final_y2)
 
 
-def FindM(eq1, eq2) -> tuple:
-    x1M, x2M = eq1[0:eq1.index('x')], eq2[0:eq2.index('x')]
-    if x1M == '-':
-        x1M = '-1.0'
-    if x2M == '-':
-        x2M == '-1.0'
-    if x1M == '':
-        x1M = '1.0'
-    if x2M == '':
-        x2M == '1.0'
-    return (DeciMate(float(x1M)), DeciMate(float(x2M)))
+def find_m(eq1: str, eq2: str) -> tuple:
+    x1_m, x2_m = eq1[0:eq1.index('x')], eq2[0:eq2.index('x')]
+    if x1_m == '-':
+        x1_m = '-1.0'
+    if x2_m == '-':
+        x2_m = '-1.0'
+    if x1_m == '':
+        x1_m = '1.0'
+    if x2_m == '':
+        x2_m = '1.0'
+    return decimate(float(x1_m)), decimate(float(x2_m))
 
 
-def FindB(eq1, eq2) -> tuple:
-    x1B, x2B = eq1[eq1.index('x')+1:], eq2[eq2.index('x')+1:]
-    if x1B == '':
-        x1B = '0.0'
-    if x2B == '':
-        x2B = '0.0'
-    return (DeciMate(float(x1B)), DeciMate(float(x2B)))
+def find_b(eq1: str, eq2: str) -> tuple:
+    x1_b, x2_b = eq1[eq1.index('x') + 1:], eq2[eq2.index('x') + 1:]
+    if x1_b == '':
+        x1_b = '0.0'
+    if x2_b == '':
+        x2_b = '0.0'
+    return decimate(float(x1_b)), decimate(float(x2_b))
 
 
-def OneSideX(x1M, x2M) -> tuple:
-    if x1M > 0 and x2M > 0: #pos pos
-        if x1M > x2M:
-            M = DeciMate(x1M-x2M)
-            MSide = 'L'
+def one_side_x(x1_m, x2_m) -> tuple:  # why
+    if x1_m > 0 and x2_m > 0:  # pos pos
+        if x1_m > x2_m:
+            m = decimate(x1_m - x2_m)
+            m_side = 'L'
         else:
-            M = DeciMate(x2M-x1M)
-            MSide = 'R'
-    elif x1M < 0:
-        if x2M > 0: #neg pos
-            M = DeciMate(x2M+x1M*-1)
-            MSide = 'R'
-        else: #neg neg
-            if x1M < x2M:
-                M = DeciMate(x1M+x2M*-1)
-                MSide = 'L'
+            m = decimate(x2_m - x1_m)
+            m_side = 'R'
+    elif x1_m < 0:
+        if x2_m > 0:  # neg pos
+            m = decimate(x2_m + x1_m * -1)
+            m_side = 'R'
+        else:  # neg neg
+            if x1_m < x2_m:
+                m = decimate(x1_m + x2_m * -1)
+                m_side = 'L'
             else:
-                M = DeciMate(x2M+x1M*-1)
-                MSide = 'R'
-    else: #pos neg
-        M = DeciMate(x1M+x2M*-1)
-        MSide = 'L'
-    return (M, MSide)
+                m = decimate(x2_m + x1_m * -1)
+                m_side = 'R'
+    else:  # pos neg
+        m = decimate(x1_m + x2_m * -1)
+        m_side = 'L'
+    return m, m_side
 
 
-def OneSideB(x1B, x2B, XSide) -> float:
-    if x1B > 0 and x2B > 0:
-        if XSide == 'L': #pos pos left
-            B = x2B-x1B
-        else: #pos pos right
-            B = x1B-x2B
-    elif x1B < 0:
-        if x2B > 0:
-            if XSide == 'L': #neg pos left   
-                B = x1B*-1+x2B
-            else: #neg pos right
-                B = x1B-x2B
+def one_side_b(x1_b, x2_b, x_side) -> float:
+    if x1_b > 0 and x2_b > 0:
+        if x_side == 'L':  # pos pos left
+            b = x2_b - x1_b
+        else:  # pos pos right
+            b = x1_b - x2_b
+    elif x1_b < 0:
+        if x2_b > 0:
+            if x_side == 'L':  # neg pos left
+                b = x1_b * -1 + x2_b
+            else:  # neg pos right
+                b = x1_b - x2_b
         else:
-            if XSide == 'L': #neg neg left
-                B = x2B+x1B*-1
-            else: #neg neg right
-                B = x1B+x2B*-1
+            if x_side == 'L':  # neg neg left
+                b = x2_b + x1_b * -1
+            else:  # neg neg right
+                b = x1_b + x2_b * -1
     else:
-        if XSide == 'L': #pos neg left
-            B = x2B-x1B
-        else: # pos neg right
-            B = x1B+x2B*-1
-    return B
+        if x_side == 'L':  # pos neg left
+            b = x2_b - x1_b
+        else:  # pos neg right
+            b = x1_b + x2_b * -1
+    return b
 
 
-def PlugIn(M, xVal, B) -> float:
-    return DeciMate(M*xVal)+B
+def plug_in(m, x_value, b) -> float:
+    return decimate(m * x_value) + b
 
 
-def Average(*nums: tuple) -> float:
-    Sum = 0
-    for onenum in nums:
-        Sum += onenum
-    return DeciMate((Sum)/len(nums))
+def average(*nums: float) -> float:
+    sum_ = 0
+    for one_num in nums:
+        sum_ += one_num
+    return decimate(sum_ / len(nums))
 
 
-def Clean(dusty: str) -> str:
+def clean(dusty: str) -> str:
     dusty = dusty.replace('--', '+')
     dusty = dusty.removesuffix('-0.0')
     dusty = dusty.removesuffix('+0.0')
@@ -133,179 +133,181 @@ def Clean(dusty: str) -> str:
     return dusty
 
 
-def DeciMate(num) -> float:
+def decimate(num) -> float:
     return round(num, 3)
 
 
-def Coords(Point='O', **kpoints) -> tuple:
-    if Point == 'O':
-        hLine = (
+def coords(point='O', **kpoints) -> tuple:
+    if point == 'O':
+        h_line = (
             'A' if kpoints['eq1']['pr'] == f'y={kpoints["a"]["y"]}' else
             'B' if kpoints['eq2']['pr'] == f'y={kpoints["b"]["y"]}' else
             'C' if kpoints['eq3']['pr'] == f'y={kpoints["c"]["y"]}' else None
         )
-        vLine = (
+        v_line = (
             'A' if kpoints['eq1']['pr'] == f'x={kpoints["a"]["x"]}' else
             'B' if kpoints['eq2']['pr'] == f'x={kpoints["b"]["x"]}' else
             'C' if kpoints['eq3']['pr'] == f'x={kpoints["c"]["x"]}' else None
         )
     else:
-        hLine = (
+        h_line = (
             'A' if 'x+' not in kpoints['eq1']['pr']
-                and 'x-' not in kpoints['eq1']['pr']
-                and 'y=' in kpoints['eq1']['pr'] else
+                   and 'x-' not in kpoints['eq1']['pr']
+                   and 'y=' in kpoints['eq1']['pr'] else
             'B' if 'x+' not in kpoints['eq2']['pr']
-                and 'x-' not in kpoints['eq2']['pr']
-                and 'y=' in kpoints['eq2']['pr'] else
+                   and 'x-' not in kpoints['eq2']['pr']
+                   and 'y=' in kpoints['eq2']['pr'] else
             'C' if 'x+' not in kpoints['eq3']['pr']
-                and 'x-' not in kpoints['eq3']['pr']
-                and 'y=' in kpoints['eq3']['pr'] else None
+                   and 'x-' not in kpoints['eq3']['pr']
+                   and 'y=' in kpoints['eq3']['pr'] else None
         )
-        vLine = (
+        v_line = (
             'A' if 'x=' in kpoints['eq1']['pr'] else
             'B' if 'x=' in kpoints['eq2']['pr'] else
             'C' if 'x=' in kpoints['eq3']['pr'] else None
         )
-    if hLine == None:
-        if vLine == None: # straight to solve
-            Solve1 = Solve(kpoints['eq1']['eq'], kpoints['eq2']['eq'])
-            Solve2 = Solve(kpoints['eq2']['eq'], kpoints['eq3']['eq'])
-            Solve3 = Solve(kpoints['eq3']['eq'], kpoints['eq1']['eq'])
-            return (Average(Solve1[0], Solve2[0], Solve3[0]), 
-                    Average(Solve1[1], Solve2[1], Solve3[1]))
-        elif vLine == 'A': # solve with B and C
-            return (Solve(kpoints['eq2']['eq'], kpoints['eq3']['eq']))
-        elif vLine == 'B': # sw A C
-            return (Solve(kpoints['eq1']['eq'], kpoints['eq3']['eq']))
-        else: # 'C' sw A B
-            return (Solve(kpoints['eq1']['eq'], kpoints['eq2']['eq']))
-    elif hLine == 'A':
-        if vLine == None:
-            return (Solve(kpoints['eq2']['eq'], kpoints['eq3']['eq']))
-        elif vLine == 'B': # y of A, x of B
+    if h_line is None:
+        if v_line is None:  # straight to solve
+            solve1 = solve(kpoints['eq1']['eq'], kpoints['eq2']['eq'])
+            solve2 = solve(kpoints['eq2']['eq'], kpoints['eq3']['eq'])
+            solve3 = solve(kpoints['eq3']['eq'], kpoints['eq1']['eq'])
+            return (average(solve1[0], solve2[0], solve3[0]),
+                    average(solve1[1], solve2[1], solve3[1]))
+        elif v_line == 'A':  # solve with B and C
+            return solve(kpoints['eq2']['eq'], kpoints['eq3']['eq'])
+        elif v_line == 'B':  # sw A C
+            return solve(kpoints['eq1']['eq'], kpoints['eq3']['eq'])
+        else:  # 'C' sw A B
+            return solve(kpoints['eq1']['eq'], kpoints['eq2']['eq'])
+    elif h_line == 'A':
+        if v_line is None:
+            return solve(kpoints['eq2']['eq'], kpoints['eq3']['eq'])
+        elif v_line == 'B':  # y of A, x of B
             return (
-                DeciMate(kpoints['b']['x']), DeciMate(kpoints['a']['y'])
-                if Point == 'O' else 
-                DeciMate(float(kpoints['eq2']['eq'])),
-                DeciMate(float(kpoints['eq1']['eq']))
+                decimate(kpoints['b']['x']), decimate(kpoints['a']['y'])
+                if point == 'O' else
+                decimate(float(kpoints['eq2']['eq'])),
+                decimate(float(kpoints['eq1']['eq']))
             )
-        else: # 'C'
+        else:  # 'C'
             return (
-                DeciMate(kpoints['c']['x']), DeciMate(kpoints['a']['y'])
-                if Point == 'O' else
-                DeciMate(float(kpoints['eq3']['eq'])),
-                DeciMate(float(kpoints['eq1']['eq']))
+                decimate(kpoints['c']['x']), decimate(kpoints['a']['y'])
+                if point == 'O' else
+                decimate(float(kpoints['eq3']['eq'])),
+                decimate(float(kpoints['eq1']['eq']))
             )
-    elif hLine == 'B':
-        if vLine == None:
-            return Solve(kpoints['eq1']['eq'], kpoints['eq3']['eq'])
-        elif vLine == 'A': # y of b
+    elif h_line == 'B':
+        if v_line is None:
+            return solve(kpoints['eq1']['eq'], kpoints['eq3']['eq'])
+        elif v_line == 'A':  # y of b
             return (
-                DeciMate(kpoints['a']['x']), DeciMate(kpoints['b']['y'])
-                if Point == 'O' else
-                DeciMate(float(kpoints['eq1']['eq'])),
-                DeciMate(float(kpoints['eq2']['eq']))
+                decimate(kpoints['a']['x']), decimate(kpoints['b']['y'])
+                if point == 'O' else
+                decimate(float(kpoints['eq1']['eq'])),
+                decimate(float(kpoints['eq2']['eq']))
             )
-        else: # 'C'
+        else:  # 'C'
             return (
-                DeciMate(kpoints['c']['x']), DeciMate(kpoints['b']['y'])
-                if Point == 'O' else 
-                DeciMate(float(kpoints['eq3']['eq'])),
-                DeciMate(float(kpoints['eq2']['eq']))
+                decimate(kpoints['c']['x']), decimate(kpoints['b']['y'])
+                if point == 'O' else
+                decimate(float(kpoints['eq3']['eq'])),
+                decimate(float(kpoints['eq2']['eq']))
             )
-    else: # 'C'
-        if vLine == None:
-            return Solve(kpoints['eq1']['eq'], kpoints['eq2']['eq'])
-        elif vLine == 'A': # y of c
+    else:  # 'C'
+        if v_line is None:
+            return solve(kpoints['eq1']['eq'], kpoints['eq2']['eq'])
+        elif v_line == 'A':  # y of c
             return (
-                DeciMate(kpoints['a']['x']), DeciMate(kpoints['c']['y'])
-                if Point == 'O' else 
-                DeciMate(float(kpoints['eq1']['eq'])),
-                DeciMate(float(kpoints['eq3']['eq']))
+                decimate(kpoints['a']['x']), decimate(kpoints['c']['y'])
+                if point == 'O' else
+                decimate(float(kpoints['eq1']['eq'])),
+                decimate(float(kpoints['eq3']['eq']))
             )
-        else: # 'B'
+        else:  # 'B'
             return (
-                DeciMate(kpoints['b']['x']), DeciMate(kpoints['c']['y'])
-                if Point == 'O' else
-                DeciMate(float(kpoints['eq2']['eq'])),
-                DeciMate(float(kpoints['eq3']['eq']))
+                decimate(kpoints['b']['x']), decimate(kpoints['c']['y'])
+                if point == 'O' else
+                decimate(float(kpoints['eq2']['eq'])),
+                decimate(float(kpoints['eq3']['eq']))
             )
 
 
-def SlopeEquation(m, x1, y1, per=False) -> dict:
+def slope_equation(m, x1, y1, per=False) -> dict:
     if m == '':
-        ForPrint, ForEq = f'x={x1}', f'{x1}'
+        for_print, for_eq = f'x={x1}', f'{x1}'  # perpendicular?????
     elif m == 0:
-        ForPrint, ForEq = f'y={y1}', f'{y1}'
+        for_print, for_eq = f'y={y1}', f'{y1}'
     else:
-        m = (m*-1)**-1 if per == False else m # perpendicular
-        if m*x1*-1 + y1 < 0:
-            ForPrint = f'y={DeciMate(m)}x{DeciMate(m*x1*-1+y1)}'
-            ForEq = f'{m}x{m*x1*-1+y1}'
+        if per is False:
+            m = (m * -1) ** -1  # perpendicular
+        if m * x1 * -1 + y1 < 0:
+            for_print = f'y={decimate(m)}x{decimate(m * x1 * -1 + y1)}'
+            for_eq = f'{m}x{m * x1 * -1 + y1}'
         else:
-            ForPrint = f'y={DeciMate(m)}x+{DeciMate(m*x1*-1+y1)}'
-            ForEq = f'{m}x+{m*x1*-1+y1}'
-    ForPrint, ForEq = Clean(ForPrint), Clean(ForEq)
-    return {'pr':ForPrint, 'eq':ForEq}
+            for_print = f'y={decimate(m)}x+{decimate(m * x1 * -1 + y1)}'
+            for_eq = f'{m}x+{m * x1 * -1 + y1}'
+    for_print, for_eq = clean(for_print), clean(for_eq)
+    return {'pr': for_print, 'eq': for_eq}
 
 
-def Orthocenter(a, b, c) -> str:
-    AltA = SlopeEquation(Slope(b['x'], b['y'], c['x'], c['y']), a['x'], a['y'])
-    AltB = SlopeEquation(Slope(a['x'], a['y'], c['x'], c['y']), b['x'], b['y'])
-    AltC = SlopeEquation(Slope(a['x'], a['y'], b['x'], b['y']), c['x'], c['y'])
-    Ortho = Coords(eq1=AltA, eq2=AltB, eq3=AltC, a=a, b=b, c=c)
+def orthocenter(a, b, c) -> str:
+    alt_a = slope_equation(slope(b['x'], b['y'], c['x'], c['y']), a['x'], a['y'])
+    alt_b = slope_equation(slope(a['x'], a['y'], c['x'], c['y']), b['x'], b['y'])
+    alt_c = slope_equation(slope(a['x'], a['y'], b['x'], b['y']), c['x'], c['y'])
+    ortho = coords(eq1=alt_a, eq2=alt_b, eq3=alt_c, a=a, b=b, c=c)
     return (
-        f'Altitude A: {AltA["pr"]}\nAltitude B: {AltB["pr"]}\n'
-        f'Altitude C: {AltC["pr"]}\nOrthocenter: {Ortho}\n\n'
+        f'Altitude A: {alt_a["pr"]}\nAltitude B: {alt_b["pr"]}\n'
+        f'Altitude C: {alt_c["pr"]}\nOrthocenter: {ortho}\n\n'
     )
 
 
-def Circumcenter(a, b, c) -> str:
-    PerA = (SlopeEquation(Slope(b['x'], b['y'], c['x'], c['y']),
-            Average(b['x'], c['x']), Average(b['y'], c['y'])))
-    PerB = (SlopeEquation(Slope(a['x'], a['y'], c['x'], c['y']),
-            Average(a['x'], c['x']), Average(a['y'], c['y'])))
-    PerC = (SlopeEquation(Slope(a['x'], a['y'], b['x'], b['y']),
-            Average(a['x'], b['x']), Average(a['y'], b['y'])))
-    Circum = Coords('C', eq1=PerA, eq2=PerB, eq3=PerC, a=a, b=b, c=c)
+def circumcenter(a, b, c) -> str:
+    per_a = (slope_equation(slope(b['x'], b['y'], c['x'], c['y']),
+                            average(b['x'], c['x']), average(b['y'], c['y'])))
+    per_b = (slope_equation(slope(a['x'], a['y'], c['x'], c['y']),
+                            average(a['x'], c['x']), average(a['y'], c['y'])))
+    per_c = (slope_equation(slope(a['x'], a['y'], b['x'], b['y']),
+                            average(a['x'], b['x']), average(a['y'], b['y'])))
+    circum = coords('C', eq1=per_a, eq2=per_b, eq3=per_c, a=a, b=b, c=c)
     return (
-        f'Perpendicular Bisector of AB: {PerC["pr"]}\n'
-        f'Perpendicular Bisector of AC: {PerB["pr"]}\n'
-        f'Perpendicular Bisector of BC: {PerA["pr"]}\n'
-        f'Circumcenter: {Circum}\n\n'
+        f'Perpendicular Bisector of AB: {per_c["pr"]}\n'
+        f'Perpendicular Bisector of AC: {per_b["pr"]}\n'
+        f'Perpendicular Bisector of BC: {per_a["pr"]}\n'
+        f'Circumcenter: {circum}\n\n'
     )
 
 
-def Centroid(a, b, c) -> str:
-    MedA = (SlopeEquation(Slope((b["x"]+c["x"])/2, (b["y"]+c["y"])/2,
-            a["x"], a["y"]), a['x'], a['y'], True))
-    MedB = (SlopeEquation(Slope((a["x"]+c["x"])/2, (a["y"]+c["y"])/2,
-            b["x"], b["y"]), b['x'], b['y'], True))
-    MedC = (SlopeEquation(Slope((a["x"]+b["x"])/2, (a["y"]+b["y"])/2,
-            c["x"], c["y"]), c['x'], c['y'], True))
-    Centro = (Average(a['x'], b['x'], c['x']), Average(a['y'], b['y'], c['y']))
+def centroid(a, b, c) -> str:
+    med_a = (slope_equation(slope((b["x"] + c["x"]) / 2, (b["y"] + c["y"]) / 2,
+                                  a["x"], a["y"]), a['x'], a['y'], True))
+    med_b = (slope_equation(slope((a["x"] + c["x"]) / 2, (a["y"] + c["y"]) / 2,
+                                  b["x"], b["y"]), b['x'], b['y'], True))
+    med_c = (slope_equation(slope((a["x"] + b["x"]) / 2, (a["y"] + b["y"]) / 2,
+                                  c["x"], c["y"]), c['x'], c['y'], True))
+    centro = (average(a['x'], b['x'], c['x']), average(a['y'], b['y'], c['y']))
     return (
-        f'Median A: {MedA["pr"]}\nMedian B: {MedB["pr"]}\n'
-        f'Median C: {MedC["pr"]}\nCentroid: {Centro}'
+        f'Median A: {med_a["pr"]}\nMedian B: {med_b["pr"]}\n'
+        f'Median C: {med_c["pr"]}\nCentroid: {centro}'
     )
 
 
-def Execute() -> str:
-    a, b, c = GetInputs()
-    ABSlope = (SlopeEquation(Slope(a["x"], a["y"], b["x"], b["y"]),
-                a["x"], a["y"], True)["pr"])
-    ACSlope = (SlopeEquation(Slope(a["x"], a["y"], c["x"], c["y"]),
-                a["x"], a["y"], True)["pr"])
-    BCSlope = (SlopeEquation(Slope(b["x"], b["y"], c["x"], c["y"]),
-                b["x"], b["y"], True)["pr"])
-    FinalString = (
+def main() -> None:
+    a, b, c = get_inputs()
+    ab_slope = (slope_equation(slope(a["x"], a["y"], b["x"], b["y"]),
+                               a["x"], a["y"], True)["pr"])
+    ac_slope = (slope_equation(slope(a["x"], a["y"], c["x"], c["y"]),
+                               a["x"], a["y"], True)["pr"])
+    bc_slope = (slope_equation(slope(b["x"], b["y"], c["x"], c["y"]),
+                               b["x"], b["y"], True)["pr"])
+    final_string = (
         f'A({a["x"]}, {a["y"]}) B({b["x"]}, {b["y"]}) C({c["x"]}, {c["y"]})\n'
-        f'Slope of AB: {ABSlope}\nSlope of AC: {ACSlope}\n'
-        f'Slope of BC: {BCSlope}\n\n'
+        f'Slope of AB: {ab_slope}\nSlope of AC: {ac_slope}\n'
+        f'Slope of BC: {bc_slope}\n\n'
     )
-    for cent in (Orthocenter, Circumcenter, Centroid):
-        FinalString = FinalString+cent(a, b, c)
-    return FinalString
+    for cent in (orthocenter, circumcenter, centroid):
+        final_string = final_string + cent(a, b, c)
+    print(final_string)
 
 
-print(Execute())
+if __name__ == '__main__':
+    main()
