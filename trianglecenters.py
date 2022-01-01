@@ -21,9 +21,9 @@ def clean_inputs(inp: str) -> list:
 
 def slope(x1, y1, x2, y2) -> float | str:
     if x2 - x1 == 0:
-        return 0
-    elif y2 - y1 == 0:
         return ''
+    elif y2 - y1 == 0:
+        return 0
     else:
         m_val = (y2 - y1) / (x2 - x1)
         return decimate(m_val)
@@ -184,59 +184,65 @@ def coords(point='O', **kpoints) -> tuple:
             return solve(kpoints['eq2']['eq'], kpoints['eq3']['eq'])
         elif v_line == 'B':  # y of A, x of B
             return (
-                decimate(kpoints['b']['x']), decimate(kpoints['a']['y'])
+                (decimate(kpoints['b']['x']), decimate(kpoints['a']['y']))
                 if point == 'O' else
-                decimate(float(kpoints['eq2']['eq'])),
-                decimate(float(kpoints['eq1']['eq']))
+                (decimate(float(kpoints['eq2']['eq'])),
+                 decimate(float(kpoints['eq1']['eq'])))
             )
         else:  # 'C'
             return (
-                decimate(kpoints['c']['x']), decimate(kpoints['a']['y'])
+                (decimate(kpoints['c']['x']), decimate(kpoints['a']['y']))
                 if point == 'O' else
-                decimate(float(kpoints['eq3']['eq'])),
-                decimate(float(kpoints['eq1']['eq']))
+                (decimate(float(kpoints['eq3']['eq'])),
+                 decimate(float(kpoints['eq1']['eq'])))
             )
     elif h_line == 'B':
         if v_line is None:
             return solve(kpoints['eq1']['eq'], kpoints['eq3']['eq'])
         elif v_line == 'A':  # y of b
             return (
-                decimate(kpoints['a']['x']), decimate(kpoints['b']['y'])
+                (decimate(kpoints['a']['x']), decimate(kpoints['b']['y']))
                 if point == 'O' else
-                decimate(float(kpoints['eq1']['eq'])),
-                decimate(float(kpoints['eq2']['eq']))
+                (decimate(float(kpoints['eq1']['eq'])),
+                 decimate(float(kpoints['eq2']['eq'])))
             )
         else:  # 'C'
             return (
-                decimate(kpoints['c']['x']), decimate(kpoints['b']['y'])
+                (decimate(kpoints['c']['x']), decimate(kpoints['b']['y']))
                 if point == 'O' else
-                decimate(float(kpoints['eq3']['eq'])),
-                decimate(float(kpoints['eq2']['eq']))
+                (decimate(float(kpoints['eq3']['eq'])),
+                 decimate(float(kpoints['eq2']['eq'])))
             )
     else:  # 'C'
         if v_line is None:
             return solve(kpoints['eq1']['eq'], kpoints['eq2']['eq'])
         elif v_line == 'A':  # y of c
             return (
-                decimate(kpoints['a']['x']), decimate(kpoints['c']['y'])
+                (decimate(kpoints['a']['x']), decimate(kpoints['c']['y']))
                 if point == 'O' else
-                decimate(float(kpoints['eq1']['eq'])),
-                decimate(float(kpoints['eq3']['eq']))
+                (decimate(float(kpoints['eq1']['eq'])),
+                 decimate(float(kpoints['eq3']['eq'])))
             )
         else:  # 'B'
             return (
-                decimate(kpoints['b']['x']), decimate(kpoints['c']['y'])
+                (decimate(kpoints['b']['x']), decimate(kpoints['c']['y']))
                 if point == 'O' else
-                decimate(float(kpoints['eq2']['eq'])),
-                decimate(float(kpoints['eq3']['eq']))
+                (decimate(float(kpoints['eq2']['eq'])),
+                 decimate(float(kpoints['eq3']['eq'])))
             )
 
 
 def slope_equation(m, x1, y1, per=False) -> dict:
     if m == '':
-        for_print, for_eq = f'x={x1}', f'{x1}'  # perpendicular?????
+        if per is False:
+            for_print, for_eq = f'y={y1}', f'{y1}'
+        else:
+            for_print, for_eq = f'x={x1}', f'{x1}'
     elif m == 0:
-        for_print, for_eq = f'y={y1}', f'{y1}'
+        if per is False:
+            for_print, for_eq = f'x={x1}', f'{x1}'
+        else:
+            for_print, for_eq = f'y={y1}', f'{y1}'
     else:
         if per is False:
             m = (m * -1) ** -1  # perpendicular
@@ -250,18 +256,19 @@ def slope_equation(m, x1, y1, per=False) -> dict:
     return {'pr': for_print, 'eq': for_eq}
 
 
-def orthocenter(a, b, c) -> str:
+def orthocenter(a, b, c) -> dict:
     alt_a = slope_equation(slope(b['x'], b['y'], c['x'], c['y']), a['x'], a['y'])
     alt_b = slope_equation(slope(a['x'], a['y'], c['x'], c['y']), b['x'], b['y'])
     alt_c = slope_equation(slope(a['x'], a['y'], b['x'], b['y']), c['x'], c['y'])
     ortho = coords(eq1=alt_a, eq2=alt_b, eq3=alt_c, a=a, b=b, c=c)
     return (
-        f'Altitude A: {alt_a["pr"]}\nAltitude B: {alt_b["pr"]}\n'
-        f'Altitude C: {alt_c["pr"]}\nOrthocenter: {ortho}\n\n'
+        {'words': f'Altitude A: {alt_a["pr"]}\nAltitude B: {alt_b["pr"]}\n'
+                  f'Altitude C: {alt_c["pr"]}\nOrthocenter: {ortho}\n\n',
+         'nowords': f'{alt_a["pr"]}\n{alt_b["pr"]}\n{alt_c["pr"]}\n{ortho}\n'}
     )
 
 
-def circumcenter(a, b, c) -> str:
+def circumcenter(a, b, c) -> dict:
     per_a = (slope_equation(slope(b['x'], b['y'], c['x'], c['y']),
                             average(b['x'], c['x']), average(b['y'], c['y'])))
     per_b = (slope_equation(slope(a['x'], a['y'], c['x'], c['y']),
@@ -270,14 +277,15 @@ def circumcenter(a, b, c) -> str:
                             average(a['x'], b['x']), average(a['y'], b['y'])))
     circum = coords('C', eq1=per_a, eq2=per_b, eq3=per_c, a=a, b=b, c=c)
     return (
-        f'Perpendicular Bisector of AB: {per_c["pr"]}\n'
-        f'Perpendicular Bisector of AC: {per_b["pr"]}\n'
-        f'Perpendicular Bisector of BC: {per_a["pr"]}\n'
-        f'Circumcenter: {circum}\n\n'
+        {'words': f'Perpendicular Bisector of AB: {per_c["pr"]}\n'
+                  f'Perpendicular Bisector of AC: {per_b["pr"]}\n'
+                  f'Perpendicular Bisector of BC: {per_a["pr"]}\n'
+                  f'Circumcenter: {circum}\n\n',
+         'nowords': f'{per_c["pr"]}\n{per_b["pr"]}\n{per_a["pr"]}\n{circum}\n'}
     )
 
 
-def centroid(a, b, c) -> str:
+def centroid(a, b, c) -> dict:
     med_a = (slope_equation(slope((b["x"] + c["x"]) / 2, (b["y"] + c["y"]) / 2,
                                   a["x"], a["y"]), a['x'], a['y'], True))
     med_b = (slope_equation(slope((a["x"] + c["x"]) / 2, (a["y"] + c["y"]) / 2,
@@ -286,8 +294,9 @@ def centroid(a, b, c) -> str:
                                   c["x"], c["y"]), c['x'], c['y'], True))
     centro = (average(a['x'], b['x'], c['x']), average(a['y'], b['y'], c['y']))
     return (
-        f'Median A: {med_a["pr"]}\nMedian B: {med_b["pr"]}\n'
-        f'Median C: {med_c["pr"]}\nCentroid: {centro}'
+        {'words': f'Median A: {med_a["pr"]}\nMedian B: {med_b["pr"]}\n'
+                  f'Median C: {med_c["pr"]}\nCentroid: {centro}',
+         'nowords': f'{med_a["pr"]}\n{med_b["pr"]}\n{med_c["pr"]}\n{centro}'}
     )
 
 
@@ -304,9 +313,17 @@ def main() -> None:
         f'Slope of AB: {ab_slope}\nSlope of AC: {ac_slope}\n'
         f'Slope of BC: {bc_slope}\n\n'
     )
+    final_string_nowords = (
+        f'\n\n{a["x"], a["y"]}\n{b["x"], b["y"]}\n{c["x"], c["y"]}\n'
+        f'{ab_slope}\n{ac_slope}\n{bc_slope}\n'
+    )
     for cent in (orthocenter, circumcenter, centroid):
-        final_string = final_string + cent(a, b, c)
+        returned = cent(a, b, c)
+        final_string += returned['words']
+        final_string_nowords += returned['nowords']
     print(final_string)
+    print(final_string_nowords)
+    input()
 
 
 if __name__ == '__main__':
